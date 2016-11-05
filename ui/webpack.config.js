@@ -8,7 +8,8 @@ module.exports = {
     },
     module: {
         loaders: [
-            { test: /\.ts$/, loader: "ts-loader" }
+            { test: /\.ts$/, loader: "ts-loader" },
+            { test: /\.html$/, loader: "html" }
         ]
     }
 };

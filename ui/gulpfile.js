@@ -5,14 +5,17 @@ const runSequence = require('run-sequence');
 const del = require('del');
 const sass = require('gulp-sass');
 const concat = require('gulp-concat');
+const karma = require('karma');
+const path = require('path');
+const gulpUtil = require('gulp-util');
 
 gulp.task('clean', () => {
     return del('./build/**/*');
 });
 
 gulp.task('scripts', () => {
-    return gulp.src(['./app/**/*.ts', '!./app/**/*.d.ts'])
-        .pipe(webpack())
+    return gulp.src(['./app/**/*.ts'])
+        .pipe(webpack(require('./webpack.config.js')).on('error', function handleError() { this.emit('end'); }))
         .pipe(rename('required.js'))
         .pipe(gulp.dest('./build/'));
 });
@@ -32,10 +35,39 @@ gulp.task('styles:watch', () => {
     return gulp.watch('./app/**/*.scss', ['styles'])
 });
 
+gulp.task('index.html', () => {
+    return gulp.src('./app/index.html')
+        .pipe(gulp.dest('./build/'));
+});
+
+gulp.task('index.html:watch', () => {
+    return gulp.watch('./app/index.html', ['index.html'])
+});
+
+gulp.task('test', done => {
+    startKarmaServer(done, true);
+});
+
+gulp.task('test:watch', done => {
+    startKarmaServer(done, false);
+});
+
+function startKarmaServer(done, singleRun) {
+    new karma.Server({
+        configFile: path.join(__dirname, 'karma.conf.js'),
+        singleRun: singleRun
+    }, (exitCode) => { 
+        if (exitCode !== 0) {
+            gulpUtil.log('Karma exited with code ' + gulpUtil.colors.red(exitCode + ''));
+        }
+        done(); 
+    }).start();
+}
+
 gulp.task('build', done => {
     runSequence(
         ['clean'],
-        ['scripts', 'styles'],
+        ['scripts', 'styles', 'index.html'],
         done
     );
 });
@@ -43,10 +75,10 @@ gulp.task('build', done => {
 gulp.task('build:watch', done => {
     runSequence(
         ['build'],
-        ['scripts:watch', 'styles:watch'],
+        ['scripts:watch', 'styles:watch', 'index.html:watch'],
         done
     );
 });
 
-gulp.task('default', ['build']);
+gulp.task('default', ['build:watch']);
 
