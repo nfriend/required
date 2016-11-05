@@ -1,4 +1,5 @@
-# generator-required [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+# generator-required
+
 > Automation of common workflow tasks while developing Required.
 
 ## Installation
