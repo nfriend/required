@@ -22,4 +22,5 @@ angular
     .directive(MainLayoutDirective.injectionName, () => new MainLayoutDirective)
     .directive(SearchBarDirective.injectionName, () => new SearchBarDirective)
     .controller(SearchBarController.injectionName, SearchBarController)
+
     .config(['$stateProvider', '$urlRouterProvider', routeConfig]);

@@ -6,6 +6,12 @@
   dependencies:
     "@types/jquery" "*"
 
+"@types/angular-mocks":
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/@types/angular-mocks/-/angular-mocks-1.5.5.tgz#7fd4af2d98968297fe771639cd418734e26d9d26"
+  dependencies:
+    "@types/angular" "*"
+
 "@types/angular-ui-router":
   version "1.1.34"
   resolved "https://registry.yarnpkg.com/@types/angular-ui-router/-/angular-ui-router-1.1.34.tgz#6debf56a772866b7eeab5b00f13b38fa07486d59"
@@ -66,6 +72,10 @@ angular-aria:
 angular-material:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/angular-material/-/angular-material-1.1.1.tgz#ed12f394ba71a9189d664115624f6787a7439af2"
+
+angular-mocks:
+  version "1.5.8"
+  resolved "https://registry.yarnpkg.com/angular-mocks/-/angular-mocks-1.5.8.tgz#2e9399056669f286a681396bc35ae0d7c5c70d16"
 
 angular-ui-router:
   version "0.3.2"
