@@ -4,6 +4,8 @@ const chalk = require('chalk');
 const yosay = require('yosay');
 const camelCase = require('camelcase');
 const upperCamelCase = require('uppercamelcase');
+const findRoot = require('find-root');
+const path = require('path');
 
 module.exports = yeoman.Base.extend({
   prompting: function () {
@@ -12,7 +14,7 @@ module.exports = yeoman.Base.extend({
       'Generating a component for Required!'
     ));
 
-    var prompts = [{
+    let prompts = [{
       type: 'input',
       name: 'componentName',
       message: 'What would like to name this component?',
@@ -31,7 +33,7 @@ module.exports = yeoman.Base.extend({
           return true;
         }
       },
-      default: 'my-cool-thing'
+      default: process.cwd().split('\\').pop()
     }, {
       type: 'confirm',
       name: 'shouldCustomize',
@@ -76,6 +78,12 @@ module.exports = yeoman.Base.extend({
 
   writing: function () {
 
+    // we will be editing the contents of index.ts to add
+    // in references to our new files 
+    let indexTsPath = path.join(findRoot(process.cwd()), 'app/index.ts');
+    let indexTs = this.fs.read(indexTsPath);
+    let relativeToIndexPath = './' + path.relative(path.join(findRoot(process.cwd()), 'app/'), process.cwd()).replace(/\\/g, '/');
+
     if (!this.props.shouldCustomize) {
       this.props.directive = this.props.controller = this.props.template = this.props.service = this.props.stylesheet = true;
     }
@@ -89,6 +97,9 @@ module.exports = yeoman.Base.extend({
         this.destinationPath(this.props.componentName + '.directive.ts'),
         this.props
       );
+
+      indexTs = addImportStatement(indexTs, this.props.uppercaseName + 'Directive', relativeToIndexPath + '/' + this.props.componentName + '.directive');
+      indexTs = addRegistration(indexTs, this.props.uppercaseName + 'Directive', 'directive');
     }
 
     if (this.props.controller) {
@@ -97,6 +108,9 @@ module.exports = yeoman.Base.extend({
         this.destinationPath(this.props.componentName + '.controller.ts'),
         this.props
       );
+
+      indexTs = addImportStatement(indexTs, this.props.uppercaseName + 'Controller', relativeToIndexPath + '/' + this.props.componentName + '.controller');
+      indexTs = addRegistration(indexTs, this.props.uppercaseName + 'Controller', 'controller');
     }
 
     if (this.props.service) {
@@ -111,6 +125,9 @@ module.exports = yeoman.Base.extend({
         this.destinationPath(this.props.componentName + '.service.spec.ts'),
         this.props
       );
+
+      indexTs = addImportStatement(indexTs, this.props.uppercaseName + 'Service', relativeToIndexPath + '/' + this.props.componentName + '.service');
+      indexTs = addRegistration(indexTs, this.props.uppercaseName + 'Service', 'service');
     }
 
     if (this.props.template) {
@@ -128,5 +145,29 @@ module.exports = yeoman.Base.extend({
         this.props
       );
     }
+
+    this.fs.write(indexTsPath, indexTs);
   },
 });
+
+function addImportStatement(fileText, importName, importPath) {
+  let importBlockIndex = fileText.search(/\/\*\s*\/yeoman:importBlock\s*\*\//);
+  if (importBlockIndex !== -1) {
+    return fileText.slice(0, importBlockIndex) + `import { ` + importName + ` } from '` + importPath + `';\n` + fileText.slice(importBlockIndex);
+  } else {
+    return fileText;
+  }
+}
+
+function addRegistration(fileText, className, type) {
+  let registrationBlockIndex = fileText.search(/\/\*\s*\/yeoman:registrationBlock\s*\*\//);
+  if (registrationBlockIndex !== -1) {
+    if (type === 'directive') {
+      return fileText.slice(0, registrationBlockIndex) + `.directive(` + className + `.injectionName, () => new ` + className + `)\n    ` + fileText.slice(registrationBlockIndex);
+    } else {
+      return fileText.slice(0, registrationBlockIndex) + `.` + type + `(` + className + `.injectionName, ` + className + `)\n    ` + fileText.slice(registrationBlockIndex);
+    }
+  } else {
+    return fileText;
+  }
+}
