@@ -21,7 +21,7 @@ gulp.task('scripts', () => {
 });
 
 gulp.task('scripts:watch', () => {
-    return gulp.watch('./app/**/*.ts', ['build']);
+    return gulp.watch(['./app/**/*.ts', './app/**/*.html'], ['build']);
 });
 
 gulp.task('styles', () => {
